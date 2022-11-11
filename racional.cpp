@@ -127,8 +127,8 @@ int mcm(int a, int b){
   }
   
   bool racional::operator>=(const racional & r) const throw(){
-    	double a = numerador/denominador;
-  	double b = r.numerador/r.denominador;
+ 	int a = numerador*r.denominador;
+  	int b = r.numerador*denominador;
   	return a >= b;
   }
 
