@@ -1,21 +1,18 @@
 #include "racional.hpp"
 
-int mcd(int a, int b){
+int racional::mcd(int a, int b){
 	int m;
 	if (b == 0) m = a;
 	else if (a == 0) m = b;
-	
 	else{
 		if (a > b) m = mcd(a % b, b);
 		else m = mcd(b % a, a);
 	}
-	
 	return m;
 }
 
-int mcm(int a, int b){
-	int m = a*b/mcd(a,b);
-	return m;
+int racional::mcm(int a, int b){
+	return a*b/mcd(a,b);;
 }
 
 
@@ -24,19 +21,19 @@ int mcm(int a, int b){
    racional::racional(int n, int d) throw(error){
   	if (d == 0) throw error(DenominadorZero);
   	int m = mcd(n, d);
-  	numerador = n/m;
-  	denominador = d/m;
+  	_numerador = n/m;
+  	_denominador = d/m;
   }
 
   // Constructora per còpia, assignació i destructora.
   racional::racional(const racional & r) throw(error){
-  	numerador = r.numerador;
-  	denominador = r.denominador;
+  	_numerador = r._numerador;
+  	_denominador = r._denominador;
   }
   
   racional & racional::operator=(const racional & r) throw(error){
-    numerador = r.numerador;
-  	denominador = r.denominador;
+    _numerador = r._numerador;
+  	_denominador = r._denominador;
 	return *this;	
   }
   
@@ -46,53 +43,47 @@ int mcm(int a, int b){
   // Consultores. La part_entera d'un racional pot ser
   // positiva o negativa. El residu SEMPRE és un racional positiu.
   int racional::num() const throw(){ 
-  	return numerador;
+  	return _numerador;
   }
   
   int racional::denom() const throw(){
-  	return denominador;
+  	return _denominador;
   }
   
   int racional::part_entera() const throw(){
-  	int pentera = numerador/denominador;
-  	return pentera;
+  	return _numerador/_denominador;
   }
   
   racional racional::residu() const throw(){
-	racional res;
-	if (numerador > denominador) res.numerador = numerador - denominador;
-	else res.numerador = numerador;
-	res.denominador = denominador;
-	return res;
+	int num;
+	if (_numerador > _denominador) num = _numerador - _denominador;
+	else num = _numerador;
+	return racional(num, _denominador);
   }
 
   /* Sobrecàrrega d'operadors aritmètics. Retorna un racional en la seva
      versió simplificada amb el resultat de l'operació. Es produeix un
      error al dividir dos racionals si el segon és 0.*/
   racional racional::operator+(const racional & r) const throw(error){
-  	int m = mcm(denominador, r.denominador);
-  	int a = (m/denominador)*numerador;
-  	int b = (m/r.denominador)*r.numerador; 
-  	racional sum(a+b, m);
-  	return sum;
+  	int m = mcm(_denominador, r._denominador);
+  	int a = (m/_denominador)*_numerador;
+  	int b = (m/r._denominador)*r._numerador; 
+  	return racional(a+b, m);
   }
   
   racional racional::operator-(const racional & r) const throw(error){
-    int m = mcm(denominador, r.denominador);
-  	int a = (m/denominador)*numerador;
-  	int b = (m/r.denominador)*r.numerador;
-  	racional resta(a-b, m);
-  	return resta;
+    int m = mcm(_denominador, r._denominador);
+  	int a = (m/_denominador)*_numerador;
+  	int b = (m/r._denominador)*r._numerador;
+  	return racional(a-b, m);
   }
   
   racional racional::operator*(const racional & r) const throw(error){
-  	racional mul(numerador * r.numerador, denominador * r.denominador);
-  	return mul;
+  	return racional(_numerador * r._numerador, _denominador * r._denominador);
   }
   
   racional racional::operator/(const racional & r) const throw(error){
-  	racional div(numerador * r.denominador, denominador * r.numerador);
-  	return div;
+  	return racional(_numerador * r._denominador, _denominador * r._numerador);
   }
 
   /* Sobrecàrrega de operadors de comparació. Retornen cert, si i només si
@@ -101,7 +92,7 @@ int mcm(int a, int b){
      que el racional r.*/
      
   bool racional::operator==(const racional & r) const throw(){
-	return numerador == r.numerador and denominador == r.denominador;
+	return _numerador == r._numerador and _denominador == r._denominador;
   }
   
   bool racional::operator!=(const racional & r) const throw(){
@@ -109,26 +100,26 @@ int mcm(int a, int b){
   }
   
   bool racional::operator<(const racional & r) const throw(){
- 	int a = numerador*r.denominador;
-  	int b = r.numerador*denominador;
+ 	int a = _numerador*r._denominador;
+  	int b = r._numerador*_denominador;
   	return a < b;	
   }
   
   bool racional::operator<=(const racional & r) const throw(){
- 	int a = numerador*r.denominador;
-  	int b = r.numerador*denominador;
+ 	int a = _numerador*r._denominador;
+  	int b = r._numerador*_denominador;
   	return a <= b;	
   }
   
   bool racional::operator>(const racional & r) const throw(){
- 	int a = numerador*r.denominador;
-  	int b = r.numerador*denominador;
+ 	int a = _numerador*r._denominador;
+  	int b = r._numerador*_denominador;
   	return a > b;	
   }
   
   bool racional::operator>=(const racional & r) const throw(){
- 	int a = numerador*r.denominador;
-  	int b = r.numerador*denominador;
+ 	int a = _numerador*r._denominador;
+  	int b = r._numerador*_denominador;
   	return a >= b;
   }
 

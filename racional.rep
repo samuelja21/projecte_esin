@@ -1,4 +1,7 @@
-int numerador;
-int denominador;
+int _numerador;
+int _denominador;
+
+static int mcd(int a, int b);
+static int mcm(int a, int b);
 
 
