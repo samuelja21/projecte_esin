@@ -32,7 +32,7 @@ int racional::mcm(int a, int b){
   }
   
   racional & racional::operator=(const racional & r) throw(error){
-    _numerador = r._numerador;
+    	_numerador = r._numerador;
   	_denominador = r._denominador;
 	return *this;	
   }
@@ -72,7 +72,7 @@ int racional::mcm(int a, int b){
   }
   
   racional racional::operator-(const racional & r) const throw(error){
-    int m = mcm(_denominador, r._denominador);
+    	int m = mcm(_denominador, r._denominador);
   	int a = (m/_denominador)*_numerador;
   	int b = (m/r._denominador)*r._numerador;
   	return racional(a-b, m);
