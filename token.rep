@@ -6,7 +6,21 @@ union value {  // En el cas que sigui un nombre a evaluar, tindrà valors extra:
     // Hem d'afegir les 3 Funcions Grans per afegir l'operador d'assignació dintre d'aquesta union
 
     value(){}
+    value(const value & val){
+        i = val.i;
+        r = val.r;
+        d = val.d;
+        v = val.v;
+    }
+    token::value operator=(value val){
+        i = val.i;
+        r = val.r;
+        d = val.d;
+        v = val.v;
+        return *this;
+    }
     ~value(){}
+    
 };
 
 

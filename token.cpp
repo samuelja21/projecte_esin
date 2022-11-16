@@ -53,19 +53,7 @@ token::token(const string & var_name) throw(error) {
 // Constructora por còpia, assignació i destructora.
 token::token(const token & t) throw(error) {
     _token = t._token;
-    //_value = t._value;
-    switch (t._token){
-    	case CT_ENTERA:
-    		_value.i = t._value.i;
-    	case CT_RACIONAL:
-    		_value.r = t._value.r;
-    	case CT_REAL:
-    		_value.d = t._value.d;
-    	case VARIABLE:
-    		_value.v = t._value.v;
-    	default:
-    		break;
-    }
+    _value = t._value;
 }
 
 token & token::operator=(const token & t) throw(error) {
