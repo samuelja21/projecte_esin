@@ -18,7 +18,7 @@ int racional::mcm(int a, int b){
 
   // Constructora. Construeix un racional en la seva versió simplificada.
   // Es produeix un error si el denominador és 0.
-   racional::racional(int n, int d) throw(error){
+   racional::racional(int n=0, int d=1) throw(error){
   	if (d == 0) throw error(DenominadorZero);
   	int m = mcd(n, d);
   	_numerador = n/m;
