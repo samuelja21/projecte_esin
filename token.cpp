@@ -1,7 +1,7 @@
 #include "token.hpp"
 
 // Especificació funcions "private"
-bool isAscii(const string &var_name) {
+bool token::isAscii(const string &var_name) {
     // S'assegura que "var_name" només conté caràcters els codis ASCII dels quals estan entre 65 ('A') i 90('Z'), entre 97 ('a') i 122 ('z') o el 95 ('_'). Si no, retorna "false"
     bool isAscii = true;
 
@@ -15,7 +15,7 @@ bool isAscii(const string &var_name) {
     return isAscii;
 }
 
-bool isOperand(const string &var_name) {
+bool token::isOperand(const string &var_name) {
     // S'assegura que "var_name" coincideixi amb un nom reservat: unassign, e, sqrt, log, exp i evalf. Si no, torna "false"
     bool isOperand = false;
 
