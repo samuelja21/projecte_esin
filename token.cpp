@@ -1,10 +1,11 @@
 #include "token.hpp"
 
 // Especificació funcions "private"
+
+
 bool token::isAscii(const string &var_name) {
     // S'assegura que "var_name" només conté caràcters els codis ASCII dels quals estan entre 65 ('A') i 90('Z'), entre 97 ('a') i 122 ('z') o el 95 ('_'). Si no, retorna "false"
     bool isAscii = true;
-
     for (unsigned int i = 0; (i < var_name.size()) or isAscii; i++) {
         char c = var_name[i];
         int cAscii = (int)c;
@@ -17,40 +18,30 @@ bool token::isAscii(const string &var_name) {
 
 bool token::isOperand(const string &var_name) {
     // S'assegura que "var_name" coincideixi amb un nom reservat: unassign, e, sqrt, log, exp i evalf. Si no, torna "false"
-    bool isOperand = false;
-
-    if (var_name == "unassign" or
-        var_name == "e" or
-        var_name == "sqrt" or
-        var_name == "log" or
-        var_name == "exp" or
-        var_name == "evalf")
-            isOperand = true;
-
-    return isOperand;
+    return var_name == "unassign" or var_name == "e" or var_name == "sqrt" or var_name == "log" or var_name == "exp" or var_name == "evalf";
 }
 
 /*Constructores: Construeixen tokens pels operadors, les constants enteres,
 les constants racionals, les constants reals i les variables(el seu
 identificador), respectivament.*/
-explicit token::token(codi cod = NULLTOK) throw(error) {
+token::token(codi cod) throw(error) {
     if (cod == CT_ENTERA or cod == CT_RACIONAL or cod == CT_REAL or cod == VARIABLE)
         throw error(ConstructoraInadequada);
     else _token = cod;
 }
-explicit token::token(int n) throw(error) {
+token::token(int n) throw(error) {
     _token = CT_ENTERA;
     _value.i = n;
 }
-explicit token::token(const racional & r) throw(error) {
+token::token(const racional & r) throw(error) {
     _token = CT_RACIONAL;
     _value.r = r;
 }
-explicit token::token(double x) throw(error) {
+token::token(double x) throw(error) {
     _token = CT_REAL;
     _value.d = x;
 }
-explicit token::token(const string & var_name) throw(error) {
+token::token(const string & var_name) throw(error) {
     if (not isAscii(var_name) or isOperand(var_name))
         throw error(IdentificadorIncorrecte);
     else {
@@ -62,13 +53,39 @@ explicit token::token(const string & var_name) throw(error) {
 // Constructora por còpia, assignació i destructora.
 token::token(const token & t) throw(error) {
     _token = t._token;
-    _value = t._value;
+    //_value = t._value;
+    switch (t._token){
+    	case CT_ENTERA:
+    		_value.i = t._value.i;
+    	case CT_RACIONAL:
+    		_value.r = t._value.r;
+    	case CT_REAL:
+    		_value.d = t._value.d;
+    	case VARIABLE:
+    		_value.v = t._value.v;
+    	default:
+    		break;
+    }
 }
+
 token & token::operator=(const token & t) throw(error) {
     _token = t._token;
-    _value = t._value;
+    //_value = t._value;
+    switch (t._token){
+    	case CT_ENTERA:
+    		_value.i = t._value.i;
+    	case CT_RACIONAL:
+    		_value.r = t._value.r;
+    	case CT_REAL:
+    		_value.d = t._value.d;
+    	case VARIABLE:
+    		_value.v = t._value.v;
+    	default:
+    		break;
+    }
     return *this;
 }
+
 token::~token() throw() {
 }
 
@@ -77,7 +94,7 @@ constants enteres, racionals o reals) o l'identificador (en el cas de
 variables). Es produeix un error si apliquem una consultora inadequada
 sobre un token, p.e. si apliquem valor_enter sobre un token que no sigui
 una CT_ENTERA.*/
-codi token::tipus() const throw() {
+token::codi token::tipus() const throw() {
     return _token;
 }
 int token::valor_enter() const throw(error) {
@@ -101,17 +118,42 @@ string token::identificador_variable() const throw(error) {
 seus codis ho són i si 1) en cas de ser CT_ENTERA, CT_RACIONAL o CT_REAL,
 els seus valors són iguals i 2) en cas de ser VARIABLE, tenen el mateix
 nom. */
-bool token::operator==(const token & t) const throw();
-bool token::operator!=(const token & t) const throw();
+bool token::operator==(const token & t) const throw(){
+	if (_token == t._token){
+        switch (_token){
+            case CT_ENTERA: return _value.i == t._value.i;
+            case CT_RACIONAL: return _value.r == t._value.r;
+            case CT_REAL: return _value.d == t._value.d;
+            case VARIABLE: return _value.v == t._value.v;
+            default: return true;
+        }
+	}
+	else return false;
+}
+
+bool token::operator!=(const token & t) const throw(){
+	return not (*this == t);
+}
 
 /*Precedència entre tokens. L'operador > retorna cert si i només si el token
 és un operador amb major precedència que l'operador del token t. Si algun
 dels tokens no és un operador es produeix un error.*/
-bool token::operator>(const token & t) const throw(error);
-bool token::operator<(const token & t) const throw(error);
+bool token::operator>(const token & t) const throw(error){
+	if ((_token >= CT_ENTERA and _token <= VARIABLE) or (t._token >= CT_ENTERA and t._token <= VARIABLE))
+        	throw error(PrecedenciaEntreNoOperadors);
+    
+    switch(_token){
+        case EXPONENCIACIO: return t._token != EXPONENCIACIO;
+        case CANVI_DE_SIGNE: return t._token != EXPONENCIACIO and t._token != CANVI_DE_SIGNE and t._token != SIGNE_POSITIU;
+        case SIGNE_POSITIU: return t._token != EXPONENCIACIO and t._token != CANVI_DE_SIGNE and t._token != SIGNE_POSITIU;
+        case MULTIPLICACIO: return t._token == SUMA or t._token == RESTA;
+        case DIVISIO: return t._token == SUMA or t._token == RESTA;
+        default: return false;
+    }    	
+}
 
-// Gestió d'errors.
-static const int IdentificadorIncorrecte      = 11;
-static const int ConstructoraInadequada       = 12;
-static const int ConsultoraInadequada         = 13;
-static const int PrecedenciaEntreNoOperadors  = 14;
+bool token::operator<(const token & t) const throw(error){
+	return not(*this > t or *this == t);
+}
+
+
