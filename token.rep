@@ -1,0 +1,14 @@
+union value {  // En el cas que sigui un nombre a evaluar, tindrà valors extra:
+    int i;          // "i" de "_I_nteger"
+    racional r;     // "r" de "_R_acional"
+    double d;       // "d" de "_D_ouble"
+    string v;       // "v" de "_V_ariable"
+    // Hem d'afegir les 3 Funcions Grans per afegir l'operador d'assignació dintre d'aquesta union
+};
+
+codi _token;   // Token Code
+value _value;  // Token Value
+
+static bool isAscii(const string &var_name);
+
+static bool isOperand(const string &var_name);
