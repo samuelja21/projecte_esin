@@ -18,10 +18,20 @@ int racional::mcm(int a, int b){
 
   // Constructora. Construeix un racional en la seva versió simplificada.
   // Es produeix un error si el denominador és 0.
-   explicit racional::racional(int n=0, int d=1) throw(error){
+   racional::racional(int n, int d) throw(error){
   	if (d == 0) throw error(DenominadorZero);
+    bool negatiu(false);
+    if (n < 0) {
+      n = n*-1;
+      negatiu = !negatiu;
+    }
+    if (d < 0){
+      d = d*-1;
+      negatiu = !negatiu;
+    } 
   	int m = mcd(n, d);
-  	_numerador = n/m;
+  	if (negatiu) _numerador = n*-1/m;
+    else _numerador = n/m;
   	_denominador = d/m;
   }
 
@@ -51,14 +61,18 @@ int racional::mcm(int a, int b){
   }
   
   int racional::part_entera() const throw(){
-  	return _numerador/_denominador;
+  	if (num() > 0) return _numerador/_denominador;
+    else return _numerador/_denominador - (_numerador % _denominador != 0);
   }
   
   racional racional::residu() const throw(){
 	int num;
 	if (_numerador > _denominador) num = _numerador - _denominador;
-	else num = _numerador;
-	return racional(num, _denominador);
+	else {
+    if (_numerador > 0) num = _numerador;
+    else num = (*this - racional(part_entera())).num();
+  }
+  return racional(num, _denominador);
   }
 
   /* Sobrecàrrega d'operadors aritmètics. Retorna un racional en la seva
@@ -122,4 +136,3 @@ int racional::mcm(int a, int b){
   	int b = r._numerador*_denominador;
   	return a >= b;
   }
-
