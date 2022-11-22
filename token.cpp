@@ -6,13 +6,13 @@
 bool token::isAscii(const string &var_name) {
     // S'assegura que "var_name" només conté caràcters els codis ASCII dels quals estan entre 65 ('A') i 90('Z'), entre 97 ('a') i 122 ('z') o el 95 ('_'). Si no, retorna "false"
     bool isAscii = true;
-    for (unsigned int i = 0; (i < var_name.size()) or isAscii; i++) {
+    int i = 0;
+    while (i < int(var_name.size()) and isAscii){
         char c = var_name[i];
         int cAscii = (int)c;
-        if (not (cAscii >= 65 or cAscii <= 90 or cAscii >= 97 or cAscii <= 122 or cAscii == 95))
-            isAscii = false;
+        isAscii = (cAscii >= 65 or cAscii <= 90 or cAscii >= 97 or cAscii <= 122 or cAscii == 95);
+        ++i;
     }
-
     return isAscii;
 }
 
@@ -41,12 +41,12 @@ token::token(double x) throw(error) {
     _token = CT_REAL;
     _value.d = x;
 }
-token::token(const string & var_name) throw(error) {
+token::token(const string &var_name) throw(error) {
     if (not isAscii(var_name) or isOperand(var_name))
         throw error(IdentificadorIncorrecte);
     else {
         _token = VARIABLE;
-        _value.v = var_name;
+        _var = var_name;
     }
 }
 
@@ -58,19 +58,7 @@ token::token(const token & t) throw(error) {
 
 token & token::operator=(const token & t) throw(error) {
     _token = t._token;
-    //_value = t._value;
-    switch (t._token){
-    	case CT_ENTERA:
-    		_value.i = t._value.i;
-    	case CT_RACIONAL:
-    		_value.r = t._value.r;
-    	case CT_REAL:
-    		_value.d = t._value.d;
-    	case VARIABLE:
-    		_value.v = t._value.v;
-    	default:
-    		break;
-    }
+    _value = t._value;
     return *this;
 }
 
@@ -99,7 +87,7 @@ double token::valor_real() const throw(error) {
 }
 string token::identificador_variable() const throw(error) {
     if (_token != VARIABLE) throw error(ConsultoraInadequada);
-    else return _value.v;
+    else return _var;
 }
 
 /*Igualtat i desigualtat entre tokens. Dos tokens es consideren iguals si els
@@ -112,7 +100,7 @@ bool token::operator==(const token & t) const throw(){
             case CT_ENTERA: return _value.i == t._value.i;
             case CT_RACIONAL: return _value.r == t._value.r;
             case CT_REAL: return _value.d == t._value.d;
-            case VARIABLE: return _value.v == t._value.v;
+            case VARIABLE: return _var == t._var;
             default: return true;
         }
 	}
