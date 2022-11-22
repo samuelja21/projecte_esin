@@ -136,3 +136,4 @@ int racional::mcm(int a, int b){
   	int b = r._numerador*_denominador;
   	return a >= b;
   }
+ 
