@@ -54,11 +54,13 @@ token::token(const string &var_name) throw(error) {
 token::token(const token & t) throw(error) {
     _token = t._token;
     _value = t._value;
+    _var = t._var;
 }
 
 token & token::operator=(const token & t) throw(error) {
     _token = t._token;
     _value = t._value;
+    _var = t._var;
     return *this;
 }
 
