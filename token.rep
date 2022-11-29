@@ -6,14 +6,14 @@ union value {  // En el cas que sigui un nombre a evaluar, tindrà valors extra:
 
     value(){}
     value(const value & val){
-        if (val.i != 0) i = val.i;
-        if (val.r.denom() != 0) r = val.r;
-        if (val.d != 0) d = val.d;
+        i = val.i;
+        r = val.r;
+        d = val.d;
     }
     token::value operator=(value val){
-        if (val.i != 0) i = val.i;
-        if (val.r.denom() != 0) r = val.r;
-        if (val.d != 0) d = val.d;
+        i = val.i;
+        r = val.r;
+        d = val.d;
         return *this;
     }
     ~value(){}   
