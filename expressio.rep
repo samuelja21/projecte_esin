@@ -1,0 +1,10 @@
+struct node {
+    token info;
+    node* fe;
+    node* fd;
+};
+node* _arrel;
+
+static node* copia_nodes(node* m);
+static void esborra_nodes(node* m);
+static bool compara_nodes(node* m, node* n);
