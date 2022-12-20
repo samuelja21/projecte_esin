@@ -168,11 +168,7 @@ using namespace std;
                   op.push(*it);
                }
             }
-            else {
-               cout<<(*it).tipus()<<endl;
-               cout<<"nope"<<endl;
-               throw error(ErrorSintactic);
-            }
+            else throw error(ErrorSintactic);
             ++it;
          }
          while (not op.empty()){
