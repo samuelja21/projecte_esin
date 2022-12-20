@@ -2,6 +2,32 @@
 #include <stack>
 using namespace std;
 
+   bool expressio::comprova_sintaxis(const list<token> &lt, list<token>::const_iterator it){
+      bool sint(true);
+      if ((*it).tipus() <= token::VARIABLE){
+         ++it;
+         if (it == lt.end() or ((*it).tipus() >= token::SUMA and (*it).tipus() <= token::EXPONENCIACIO)) sint = true;
+         else if ((*it).tipus() == token::TANCAR_PAR) sint = true;
+         else sint = false;
+      }
+      else if ((*it).tipus() <= token::EXPONENCIACIO){
+         ++it;
+         if (((*it).tipus() >= token::SUMA and (*it).tipus() <= token::EXPONENCIACIO) or (*it).tipus() == token::TANCAR_PAR) sint = false;
+         else sint = true;
+      }
+      else if ((*it).tipus() <= token::SIGNE_POSITIU){
+         ++it;
+         if ((*it).tipus() <= token::VARIABLE or (*it).tipus() == token::OBRIR_PAR) sint = true;
+         else sint = false;
+      }
+      else if ((*it).tipus() <= token::EVALF){
+         ++it;
+         if ((*it).tipus() == token::OBRIR_PAR) sint = true;
+         else sint = false;
+      }
+      return sint;
+   }
+
    expressio::node* expressio::copia_nodes(node* m){
       node* n;
       if (m == nullptr) n = nullptr;
@@ -34,6 +60,42 @@ using namespace std;
       else if (m == nullptr and n == nullptr) return true;
       else return false;
    }
+
+   void expressio::llista_vars(node* m, list<string> &l){
+   	if (m != nullptr){
+   		llista_vars(m->fe, l);
+   		if (m->info.tipus() == token::VARIABLE) l.insert(l.begin(), m->info.identificador_variable());
+   		llista_vars(m->fd, l);
+   	}
+   }
+   
+   expressio::node* expressio::substitucio(node* m, const string &v, const expressio e){
+   	if (m != nullptr){
+   		if (m->info.tipus() == token::VARIABLE){
+            m = copia_nodes(e._arrel);
+   		}
+   		m->fe = substitucio(m->fe, v, e);
+   		m->fd = substitucio(m->fd, v, e);
+   	}
+      return m;
+   }
+   
+   void expressio::llista_tokens(node *m, list<token> &lt){
+   	if (m != nullptr){
+   		if (m->info.tipus() >= token::CANVI_DE_SIGNE){
+   			lt.insert(lt.end(), m->info);
+   			lt.insert(lt.end(), token(token::OBRIR_PAR));
+   			llista_tokens(m->fd, lt);
+   			lt.insert(lt.end(), token(token::TANCAR_PAR));
+   		}
+   		else{
+   			llista_tokens(m->fe, lt);
+   			lt.insert(lt.end(), m->info);
+   			llista_tokens(m->fd, lt);	
+   		}
+
+   	}
+   }
  
  /* Constructora d'una expressió formada per un sol token: un operand. Si
      s'utiliza el valor del token per defecte es construeix la que
@@ -59,43 +121,57 @@ using namespace std;
          stack<node*> ex;
          int par(0);
          while(it != l.end()){
-            if ((*it).tipus() == token::TANCAR_PAR) ++par;
-            else if ((*it).tipus() < token::VAR_PERCENTATGE){
-               node *a = new node;
-               a->info = *it;
-               a->fd = nullptr;
-               a->fe = nullptr;
-               ex.push(a);
-            }
-            else if ((*it).tipus() > token::CANVI_DE_SIGNE) op.push(*it);
-            else {
-               if ((not op.empty() and op.top().tipus() < (*it).tipus()) or par > 0){
-                  while (not op.empty()){
-                     if (op.top().tipus() == token::OBRIR_PAR){
-                        op.pop();
-                        --par;
-                        if (op.top().tipus() >= token::SQRT and op.top().tipus() <= token::EVALF){
+            if (comprova_sintaxis(l, it)){
+               if ((*it).tipus() <= token::VARIABLE){
+                  node *a = new node;
+                  a->info = *it;
+                  a->fd = nullptr;
+                  a->fe = nullptr;
+                  ex.push(a);
+               }
+               else if ((*it).tipus() <= token::EXPONENCIACIO){
+                  if ((not op.empty() and op.top().tipus() < (*it).tipus()) or par > 0){
+                     while (not op.empty()){
+                        if (op.top().tipus() == token::OBRIR_PAR){
+                           op.pop();
+                           --par;
+                           if (par < 0) throw error(ErrorSintactic);
+                           if (op.top().tipus() >= token::SQRT and op.top().tipus() <= token::EVALF){
+                              node *a = new node;
+                              a->info = op.top();
+                              a->fd = ex.top();
+                              ex.pop();
+                              ex.push(a);
+                              op.pop();
+                           }
+                        }
+                        else{
                            node *a = new node;
                            a->info = op.top();
                            a->fd = ex.top();
                            ex.pop();
+                           a->fe = ex.top();
+                           ex.pop();
                            ex.push(a);
                            op.pop();
                         }
-                     }
-                     else{
-                        node *a = new node;
-                        a->info = op.top();
-                        a->fd = ex.top();
-                        ex.pop();
-                        a->fe = ex.top();
-                        ex.pop();
-                        ex.push(a);
-                        op.pop();
-                     }
-                  } 
+                     } 
+                  }
+                  op.push(*it);
                }
-               op.push(*it);
+
+               else if ((*it).tipus() == token::TANCAR_PAR){
+                  ++par;
+               }
+
+               else if ((*it).tipus() >= token::CANVI_DE_SIGNE){
+                  op.push(*it);
+               }
+            }
+            else {
+               cout<<(*it).tipus()<<endl;
+               cout<<"nope"<<endl;
+               throw error(ErrorSintactic);
             }
             ++it;
          }
@@ -103,6 +179,7 @@ using namespace std;
             if (op.top().tipus() == token::OBRIR_PAR){
                op.pop();
                --par;
+               if (par < 0) throw error(ErrorSintactic);
                if (op.top().tipus() >= token::SQRT and op.top().tipus() <= token::EVALF){
                   node *a = new node;
                   a->info = op.top();
@@ -122,7 +199,8 @@ using namespace std;
                ex.push(a);
                op.pop();
             }
-         } 
+         }
+         if (par > 0) throw error(ErrorSintactic);
          _arrel = ex.top();  
       }
    }
@@ -162,14 +240,14 @@ using namespace std;
   /* Retorna una llista sense repeticions, en qualsevol ordre, amb
      els noms de les variables de l'expressió. */
   void expressio::vars(list<string> & l) const throw(error){
-
+      llista_vars(_arrel, l);
   }
 
   /* Substitueix totes les aparicions de la variable de nom v per
      l'expressió e. Si no existeix la variable v dins de l'expressió a la
      que apliquem aquest mètode l'expressió no es modifica. */
   void expressio::apply_substitution(const string & v, const expressio & e) throw(error){
-
+      _arrel = substitucio(_arrel, v, e);
   }
 
   /* Aplica un pas de simplificació a l'expressió. La subexpressió a
@@ -195,6 +273,7 @@ using namespace std;
      parèntesis que siguin estrictament necessaris per trencar les regles de
      precedència o associativitat en l'ordre d'aplicació dels operadors. */
   void expressio::list_of_tokens(list<token> & lt) throw(error){
-
+  	llista_tokens(_arrel, lt);
   }
+
 

@@ -8,3 +8,7 @@ node* _arrel;
 static node* copia_nodes(node* m);
 static void esborra_nodes(node* m);
 static bool compara_nodes(node* m, node* n);
+static void llista_vars(node* m, list<string> &l);
+static node* substitucio(node* m, const string &v, const expressio e);
+static void llista_tokens(node *m, list<token> &lt);
+static bool comprova_sintaxis(const list<token> &lt, list<token>::const_iterator it);
