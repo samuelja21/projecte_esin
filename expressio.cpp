@@ -82,18 +82,46 @@ using namespace std;
    
    void expressio::llista_tokens(node *m, list<token> &lt){
    	if (m != nullptr){
-   		if (m->info.tipus() >= token::CANVI_DE_SIGNE){
+   		if (m->info.tipus() >= token::SQRT){
    			lt.insert(lt.end(), m->info);
    			lt.insert(lt.end(), token(token::OBRIR_PAR));
    			llista_tokens(m->fd, lt);
    			lt.insert(lt.end(), token(token::TANCAR_PAR));
    		}
-   		else{
-   			llista_tokens(m->fe, lt);
+   		
+   		else if (m->info.tipus() <= token::VAR_PERCENTATGE){
    			lt.insert(lt.end(), m->info);
-   			llista_tokens(m->fd, lt);	
-   		}
-
+		   }
+			
+		   else if (m->info.tipus() <= token::SIGNE_POSITIU){
+            if (m->fe->info.tipus() <= token::SIGNE_POSITIU and m->fe->info.tipus() >= token::SUMA and m->info > m->fe->info){
+               lt.insert(lt.end(), token(token::OBRIR_PAR));
+               llista_tokens(m->fe, lt);
+               lt.insert(lt.end(), token(token::TANCAR_PAR));
+            }
+            else llista_tokens(m->fe, lt);
+            
+            lt.insert(lt.end(), m->info);
+            
+            if (m->fd->info.tipus() <= token::SIGNE_POSITIU and m->fd->info.tipus() >= token::SUMA and m->info > m->fd->info){
+               lt.insert(lt.end(), token(token::OBRIR_PAR));
+               llista_tokens(m->fd, lt);
+               lt.insert(lt.end(), token(token::TANCAR_PAR));
+            }
+            else if ((m->fd->info.tipus() == token::SUMA or m->fd->info.tipus() == token::RESTA) and m->info.tipus() == token::RESTA){
+               lt.insert(lt.end(), token(token::OBRIR_PAR));
+               llista_tokens(m->fd, lt);
+               lt.insert(lt.end(), token(token::TANCAR_PAR));
+            }
+            
+            else if ((m->fd->info.tipus() == token::MULTIPLICACIO or m->fd->info.tipus() == token::DIVISIO) and m->info.tipus() == token::DIVISIO){
+               lt.insert(lt.end(), token(token::OBRIR_PAR));
+               llista_tokens(m->fd, lt);
+               lt.insert(lt.end(), token(token::TANCAR_PAR));
+            }
+            
+            else llista_tokens(m->fd, lt);	
+		   }
    	}
    }
  
@@ -119,7 +147,7 @@ using namespace std;
          list<token>::const_iterator it = l.begin();
          stack<token> op;
          stack<node*> ex;
-         int par(0);
+         bool par(false);
          while(it != l.end()){
             if (comprova_sintaxis(l, it)){
                if ((*it).tipus() <= token::VARIABLE){
@@ -130,22 +158,9 @@ using namespace std;
                   ex.push(a);
                }
                else if ((*it).tipus() <= token::EXPONENCIACIO){
-                  if ((not op.empty() and op.top().tipus() < (*it).tipus()) or par > 0){
-                     while (not op.empty()){
-                        if (op.top().tipus() == token::OBRIR_PAR){
-                           op.pop();
-                           --par;
-                           if (par < 0) throw error(ErrorSintactic);
-                           if (op.top().tipus() >= token::SQRT and op.top().tipus() <= token::EVALF){
-                              node *a = new node;
-                              a->info = op.top();
-                              a->fd = ex.top();
-                              ex.pop();
-                              ex.push(a);
-                              op.pop();
-                           }
-                        }
-                        else{
+                  if (not op.empty() and op.top().tipus() != token::OBRIR_PAR){
+                     if (op.top().tipus() > (*it).tipus()){
+                        while (not op.empty()){
                            node *a = new node;
                            a->info = op.top();
                            a->fd = ex.top();
@@ -154,14 +169,39 @@ using namespace std;
                            ex.pop();
                            ex.push(a);
                            op.pop();
-                        }
-                     } 
+                        } 
+                     }
                   }
                   op.push(*it);
                }
 
                else if ((*it).tipus() == token::TANCAR_PAR){
-                  ++par;
+                  par = true;
+                  while (par){
+                     if (par and op.empty()) throw error(ErrorSintactic);
+                     if (op.top().tipus() == token::OBRIR_PAR){
+                        op.pop();
+                        par = false;
+                     }
+                     else{
+                        node *a = new node;
+                        a->info = op.top();
+                        a->fd = ex.top();
+                        ex.pop();
+                        a->fe = ex.top();
+                        ex.pop();
+                        ex.push(a);
+                        op.pop();
+                     }
+                  }
+                  if (not op.empty() and (op.top().tipus() >= token::SQRT and op.top().tipus() <= token::EVALF)){
+                     node *a = new node;
+                     a->info = op.top();
+                     a->fd = ex.top();
+                     ex.pop();
+                     ex.push(a);
+                     op.pop();
+                  } 
                }
 
                else if ((*it).tipus() >= token::CANVI_DE_SIGNE){
@@ -172,18 +212,15 @@ using namespace std;
             ++it;
          }
          while (not op.empty()){
-            if (op.top().tipus() == token::OBRIR_PAR){
+            if (op.top().tipus() == token::OBRIR_PAR) throw error(ErrorSintactic);
+
+            if (op.top().tipus() >= token::SQRT and op.top().tipus() <= token::EVALF){
+               node *a = new node;
+               a->info = op.top();
+               a->fd = ex.top();
+               ex.pop();
+               ex.push(a);
                op.pop();
-               --par;
-               if (par < 0) throw error(ErrorSintactic);
-               if (op.top().tipus() >= token::SQRT and op.top().tipus() <= token::EVALF){
-                  node *a = new node;
-                  a->info = op.top();
-                  a->fd = ex.top();
-                  ex.pop();
-                  ex.push(a);
-                  op.pop();
-               }
             }
             else{
                node *a = new node;
@@ -196,7 +233,6 @@ using namespace std;
                op.pop();
             }
          }
-         if (par > 0) throw error(ErrorSintactic);
          _arrel = ex.top();  
       }
    }
