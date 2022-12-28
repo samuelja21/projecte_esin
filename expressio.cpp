@@ -159,7 +159,7 @@ using namespace std;
                }
                else if ((*it).tipus() <= token::EXPONENCIACIO){
                   if (not op.empty() and op.top().tipus() != token::OBRIR_PAR){
-                     if (op.top().tipus() > (*it).tipus()){
+                     if ((*it) < op.top()){
                         while (not op.empty()){
                            node *a = new node;
                            a->info = op.top();
