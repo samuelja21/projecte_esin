@@ -12,3 +12,5 @@ static void llista_vars(node* m, list<string> &l);
 static node* substitucio(node* m, const string &v, const expressio e);
 static void llista_tokens(node *m, list<token> &lt);
 static bool comprova_sintaxis(const list<token> &lt, list<token>::const_iterator it);
+static node* simplificar(node* m, bool &s);
+static node* simplificacio(node *m);
