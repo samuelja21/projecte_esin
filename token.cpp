@@ -5,12 +5,12 @@
 
 bool token::isAscii(const string &var_name) {
     // S'assegura que "var_name" només conté caràcters els codis ASCII dels quals estan entre 65 ('A') i 90('Z'), entre 97 ('a') i 122 ('z') o el 95 ('_'). Si no, retorna "false"
-    bool isAscii = true;
+    bool isAscii = var_name.size() > 0;
     int i = 0;
     while (i < int(var_name.size()) and isAscii){
         char c = var_name[i];
         int cAscii = (int)c;
-        isAscii = (cAscii >= 65 or cAscii <= 90 or cAscii >= 97 or cAscii <= 122 or cAscii == 95);
+        isAscii = ((cAscii >= 65 and cAscii <= 90) or (cAscii >= 97 and cAscii <= 122) or cAscii == 95);
         ++i;
     }
     return isAscii;
@@ -117,7 +117,9 @@ bool token::operator!=(const token & t) const throw(){
 és un operador amb major precedència que l'operador del token t. Si algun
 dels tokens no és un operador es produeix un error.*/
 bool token::operator>(const token & t) const throw(error){
-	if ((_token >= CT_ENTERA and _token <= VARIABLE) or (t._token >= CT_ENTERA and t._token <= VARIABLE))
+	if ((_token >= CT_ENTERA and _token <= VAR_PERCENTATGE) or (_token >= SQRT))
+        	throw error(PrecedenciaEntreNoOperadors);
+	if ((t._token >= CT_ENTERA and t._token <= VAR_PERCENTATGE) or (t._token >= SQRT))
         	throw error(PrecedenciaEntreNoOperadors);
     
     switch(_token){
@@ -131,7 +133,20 @@ bool token::operator>(const token & t) const throw(error){
 }
 
 bool token::operator<(const token & t) const throw(error){
-	return not(*this > t or *this == t);
+	if ((_token >= CT_ENTERA and _token <= VAR_PERCENTATGE) or (_token >= SQRT))
+        	throw error(PrecedenciaEntreNoOperadors);
+	if ((t._token >= CT_ENTERA and t._token <= VAR_PERCENTATGE) or (t._token >= SQRT))
+        	throw error(PrecedenciaEntreNoOperadors);
+    switch(t._token){
+        case EXPONENCIACIO: return _token != EXPONENCIACIO;
+        case CANVI_DE_SIGNE: return _token != EXPONENCIACIO and _token != CANVI_DE_SIGNE and _token != SIGNE_POSITIU;
+        case SIGNE_POSITIU: return _token != EXPONENCIACIO and _token != CANVI_DE_SIGNE and _token != SIGNE_POSITIU;
+        case MULTIPLICACIO: return _token == SUMA or _token == RESTA;
+        case DIVISIO: return _token == SUMA or _token == RESTA;
+        default: return false;
+    } 
 }
+
+
 
 
