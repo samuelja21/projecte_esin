@@ -94,7 +94,10 @@ using namespace std;
    		else if (m->info.tipus() <= token::VAR_PERCENTATGE){
    			lt.insert(lt.end(), m->info);
 		   }
-			
+			else if (m->info.tipus() == token::CANVI_DE_SIGNE){
+            lt.insert(lt.end(), m->info);
+            llista_tokens(m->fd, lt);
+         }
 		   else if (m->info.tipus() <= token::SIGNE_POSITIU){
             if (m->fe->info.tipus() <= token::SIGNE_POSITIU and m->fe->info.tipus() >= token::SUMA and m->info > m->fe->info){
                lt.insert(lt.end(), token(token::OBRIR_PAR));
@@ -136,23 +139,11 @@ using namespace std;
          }
       }
       else if (m->info.tipus() == token::SUMA){
-         if ((m->fe->info.tipus() < token::VARIABLE and m->fd->info.tipus() < token::VARIABLE)){
+         if ((m->fe->info.tipus() < token::VARIABLE and m->fd->info.tipus() == m->fe->info.tipus())){
             token n;
-            if (m->fd->info.tipus() == token::CT_ENTERA){
-               if (m->fe->info.tipus() == token::CT_ENTERA) n = token(m->fe->info.valor_enter() + m->fd->info.valor_enter());
-               else if (m->fe->info.tipus() == token::CT_REAL) n = token(m->fe->info.valor_real() + m->fd->info.valor_enter());
-               else if (m->fe->info.tipus() == token::CT_RACIONAL) n = token(m->fe->info.valor_racional() + racional(m->fd->info.valor_enter()));
-            }
-            else if (m->fd->info.tipus() == token::CT_REAL){
-               if (m->fe->info.tipus() == token::CT_ENTERA) n = token(m->fe->info.valor_enter() + m->fd->info.valor_real());
-               else if (m->fe->info.tipus() == token::CT_REAL) n = token(m->fe->info.valor_real() + m->fd->info.valor_real());
-               else if (m->fe->info.tipus() == token::CT_RACIONAL) n = token(double(m->fe->info.valor_racional().num()) / double(m->fe->info.valor_racional().denom()) + m->fd->info.valor_real());
-            }
-            else if (m->fd->info.tipus() == token::CT_RACIONAL){
-               if (m->fe->info.tipus() == token::CT_ENTERA) n = token(racional(m->fe->info.valor_enter()) + m->fd->info.valor_racional());
-               else if (m->fe->info.tipus() == token::CT_REAL) n = token(m->fe->info.valor_real() + double(m->fd->info.valor_racional().num()) / double(m->fd->info.valor_racional().denom()));
-               else if (m->fe->info.tipus() == token::CT_RACIONAL) n = token(m->fe->info.valor_racional() + m->fd->info.valor_racional());
-            }
+            if (m->fd->info.tipus() == token::CT_ENTERA) n = token(m->fe->info.valor_enter() + m->fd->info.valor_enter());
+            else if (m->fd->info.tipus() == token::CT_REAL) n = token(m->fe->info.valor_real() + m->fd->info.valor_real());
+            else if (m->fd->info.tipus() == token::CT_RACIONAL) n = token(m->fe->info.valor_racional() + m->fd->info.valor_racional());
             m->info = n;
             s = true;
             m->fe = nullptr;
@@ -258,23 +249,11 @@ using namespace std;
          }
       }
       else if (m->info.tipus() == token::RESTA){
-         if ((m->fe->info.tipus() < token::VARIABLE and m->fd->info.tipus() < token::VARIABLE)){
+         if ((m->fe->info.tipus() < token::VARIABLE and m->fd->info.tipus() == m->fe->info.tipus())){
             token n;
-            if (m->fd->info.tipus() == token::CT_ENTERA){
-               if (m->fe->info.tipus() == token::CT_ENTERA) n = token(m->fe->info.valor_enter() - m->fd->info.valor_enter());
-               else if (m->fe->info.tipus() == token::CT_REAL) n = token(m->fe->info.valor_real() - m->fd->info.valor_enter());
-               else if (m->fe->info.tipus() == token::CT_RACIONAL) n = token(m->fe->info.valor_racional() - racional(m->fd->info.valor_enter()));
-            }
-            else if (m->fd->info.tipus() == token::CT_REAL){
-               if (m->fe->info.tipus() == token::CT_ENTERA) n = token(m->fe->info.valor_enter() - m->fd->info.valor_real());
-               else if (m->fe->info.tipus() == token::CT_REAL) n = token(m->fe->info.valor_real() - m->fd->info.valor_real());
-               else if (m->fe->info.tipus() == token::CT_RACIONAL) n = token(double(m->fe->info.valor_racional().num()) / double(m->fe->info.valor_racional().denom()) - m->fd->info.valor_real());
-            }
-            else if (m->fd->info.tipus() == token::CT_RACIONAL){
-               if (m->fe->info.tipus() == token::CT_ENTERA) n = token(racional(m->fe->info.valor_enter()) - m->fd->info.valor_racional());
-               else if (m->fe->info.tipus() == token::CT_REAL) n = token(m->fe->info.valor_real() - double(m->fd->info.valor_racional().num()) / double(m->fd->info.valor_racional().denom()));
-               else if (m->fe->info.tipus() == token::CT_RACIONAL) n = token(m->fe->info.valor_racional() - m->fd->info.valor_racional());
-            }
+            if (m->fd->info.tipus() == token::CT_ENTERA) n = token(m->fe->info.valor_enter() - m->fd->info.valor_enter());
+            else if (m->fd->info.tipus() == token::CT_REAL) n = token(m->fe->info.valor_real() - m->fd->info.valor_real());
+            else if (m->fd->info.tipus() == token::CT_RACIONAL) n = token(m->fe->info.valor_racional() - m->fd->info.valor_racional());
             m->info = n;
             s = true;
             m->fe = nullptr;
@@ -512,11 +491,11 @@ using namespace std;
          }
       }
       else if (m->info.tipus() == token::DIVISIO){
-         if (m->fd->info == token(0)) throw error(ErrorSintactic);
+         if (m->fd->info == token(0)) throw error(DivPerZero);
          if ((m->fe->info.tipus() < token::VARIABLE and m->fd->info.tipus() < token::VARIABLE)){
             token n;
             if (m->fd->info.tipus() == token::CT_ENTERA){
-               if (m->fe->info.tipus() == token::CT_ENTERA) n = token(m->fe->info.valor_enter() / m->fd->info.valor_enter());
+               if (m->fe->info.tipus() == token::CT_ENTERA) n = token(racional(m->fe->info.valor_enter(), m->fd->info.valor_enter()));
                else if (m->fe->info.tipus() == token::CT_REAL) n = token(m->fe->info.valor_real() / m->fd->info.valor_enter());
                else if (m->fe->info.tipus() == token::CT_RACIONAL) n = token(m->fe->info.valor_racional() / racional(m->fd->info.valor_enter()));
             }
@@ -613,13 +592,13 @@ using namespace std;
       else if (m->info.tipus() == token::EXPONENCIACIO){
          if (m->fe->info.tipus() < token::VARIABLE and m->fd->info.tipus() < token::VARIABLE){
             if (m->fd->info.tipus() != token::CT_ENTERA){
-               if (m->fe->info.tipus() == token::CT_ENTERA and m->fe->info.valor_enter() < 0) throw error(ErrorSintactic);
-               else if (m->fe->info.tipus() == token::CT_REAL and m->fe->info.valor_real() < 0) throw error(ErrorSintactic);
-               else if (m->fe->info.tipus() == token::CT_RACIONAL and m->fe->info.valor_racional().num() < 0) throw error(ErrorSintactic);
+               if (m->fe->info.tipus() == token::CT_ENTERA and m->fe->info.valor_enter() < 0) throw error(NegatElevNoEnter);
+               else if (m->fe->info.tipus() == token::CT_REAL and m->fe->info.valor_real() < 0) throw error(NegatElevNoEnter);
+               else if (m->fe->info.tipus() == token::CT_RACIONAL and m->fe->info.valor_racional().num() < 0) throw error(NegatElevNoEnter);
             }
             token t;
             if (m->fe->info.tipus() < token::VARIABLE and m->fd->info.tipus() == token::CT_ENTERA){
-               if (m->fe->info.tipus() == token::CT_ENTERA) t = token(pow(m->fe->info.valor_enter(), m->fd->info.valor_enter()));
+               if (m->fe->info.tipus() == token::CT_ENTERA) t = token(int(pow(m->fe->info.valor_enter(), m->fd->info.valor_enter())));
                else if (m->fe->info.tipus() == token::CT_REAL) t = token(pow(m->fe->info.valor_real(), m->fd->info.valor_enter()));
                else if (m->fe->info.tipus() == token::CT_RACIONAL) t = token(pow(double(m->fd->info.valor_racional().num()) / double(m->fd->info.valor_racional().denom()) , m->fd->info.valor_enter()));
                node* n = new node;
@@ -684,26 +663,10 @@ using namespace std;
          }
       }
       else if (m->info.tipus() == token::SQRT){
-         if (m->fd->info.tipus() < token::VARIABLE){
-               token t;
-               if (m->fd->info.tipus() == token::CT_ENTERA){
-                  if (m->fd->info.valor_enter() < 0) throw error(ErrorSintactic);
-                  else t = token(sqrt(m->fd->info.valor_enter()));
-               }
-               else if (m->fd->info.tipus() == token::CT_REAL){
-                  if ( m->fd->info.valor_real() < 0) throw error(ErrorSintactic);
-                  else t = token(sqrt(m->fd->info.valor_real()));
-               } 
-               else if (m->fd->info.tipus() == token::CT_RACIONAL){
-                  if ( m->fd->info.valor_racional().num() < 0) throw error(ErrorSintactic);
-                  else t = token(sqrt(double(m->fd->info.valor_racional().num()) / double(m->fd->info.valor_racional().denom())));
-               }
-               node *n = new node;
-               n->info = t,
-               m = n;
-               s = true;
-         }
-         else{
+         if (m->fd->info.tipus() == token::CT_ENTERA and m->fd->info.valor_enter() < 0) throw error(SqrtDeNegatiu);
+         if (m->fd->info.tipus() == token::CT_REAL and m->fd->info.valor_real() < 0) throw error(SqrtDeNegatiu);
+         if (m->fd->info.tipus() == token::CT_RACIONAL and m->fd->info.valor_racional().num() < 0) throw error(SqrtDeNegatiu);
+         if (m->fd->info.tipus() <= token::VARIABLE){
             node *n = new node;
             n->info = token(token::EXPONENCIACIO);
             n->fe = m->fd;
@@ -881,7 +844,6 @@ using namespace std;
          list<token>::const_iterator it = l.begin();
          stack<token> op;
          stack<node*> ex;
-         bool par(false);
          while(it != l.end()){
             if (comprova_sintaxis(l, it)){
                if ((*it).tipus() <= token::VARIABLE){
@@ -892,9 +854,9 @@ using namespace std;
                   ex.push(a);
                }
                else if ((*it).tipus() <= token::EXPONENCIACIO){
-                  if (not op.empty() and op.top().tipus() != token::OBRIR_PAR){
+                  if (not op.empty() and op.top().tipus() < token::CANVI_DE_SIGNE){
                      if ((*it) < op.top()){
-                        while (not op.empty()){
+                        while (not op.empty() and op.top().tipus() != token::OBRIR_PAR){
                            node *a = new node;
                            a->info = op.top();
                            a->fd = ex.top();
@@ -910,24 +872,30 @@ using namespace std;
                }
 
                else if ((*it).tipus() == token::TANCAR_PAR){
-                  par = true;
-                  while (par){
-                     if (par and op.empty()) throw error(ErrorSintactic);
-                     if (op.top().tipus() == token::OBRIR_PAR){
-                        op.pop();
-                        par = false;
-                     }
+                  while (op.top().tipus() != token::OBRIR_PAR){
+                     if (op.empty()) throw error(ErrorSintactic);
                      else{
-                        node *a = new node;
-                        a->info = op.top();
-                        a->fd = ex.top();
-                        ex.pop();
-                        a->fe = ex.top();
-                        ex.pop();
-                        ex.push(a);
-                        op.pop();
+                        if (op.top().tipus() >= token::CANVI_DE_SIGNE and op.top().tipus() <= token::EVALF){
+                           node *a = new node;
+                           a->info = op.top();
+                           a->fd = ex.top();
+                           ex.pop();
+                           ex.push(a);
+                           op.pop();
+                        }
+                        else {
+                           node *a = new node;
+                           a->info = op.top();
+                           a->fd = ex.top();
+                           ex.pop();
+                           a->fe = ex.top();
+                           ex.pop();
+                           ex.push(a);
+                           op.pop();
+                        }
                      }
                   }
+                  op.pop();
                   if (not op.empty() and (op.top().tipus() >= token::CANVI_DE_SIGNE and op.top().tipus() <= token::EVALF)){
                      node *a = new node;
                      a->info = op.top();
@@ -952,6 +920,7 @@ using namespace std;
                node *a = new node;
                a->info = op.top();
                a->fd = ex.top();
+               a->fe = nullptr;
                ex.pop();
                ex.push(a);
                op.pop();
@@ -967,7 +936,8 @@ using namespace std;
                op.pop();
             }
          }
-         _arrel = ex.top();  
+
+         _arrel = ex.top(); 
       }
    }
 
