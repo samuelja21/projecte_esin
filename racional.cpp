@@ -66,13 +66,13 @@ int racional::mcm(int a, int b){
   }
   
   racional racional::residu() const throw(){
-	int num;
-	if (_numerador > _denominador) num = _numerador - _denominador;
-	else {
-    		if (_numerador > 0) num = _numerador;
-    		else num = (*this - racional(part_entera())).num();
-  	}
-  	return racional(num, _denominador);
+    int num = _numerador;
+    if (num >= _denominador) while (num >= _denominador) num = num - _denominador;
+    else {
+      if (_numerador > 0) num = _numerador;
+      else num = (*this - racional(part_entera())).num();
+    }
+    return racional(num, _denominador);
   }
 
   /* Sobrecàrrega d'operadors aritmètics. Retorna un racional en la seva
