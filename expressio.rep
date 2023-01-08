@@ -2,15 +2,78 @@ struct node {
     token info;
     node* fe;
     node* fd;
+
+    node(){}
+    node(token tk){
+        info = tk;
+        fe = nullptr;
+        fd = nullptr;
+    }
+    expressio::node operator=(node n){
+        info = n.info;
+        fe = n.fe;
+        fd = n.fd;
+        return *this;
+    }
+    ~node(){}
 };
 node* _arrel;
+
+/* Hem decidit implementar l'expressio com a arbre binari i no general perquè no hi ha arbres amb més de dos operadors, en el cas dels operadors unaris hem decidit 
+utilitzar el fill dret i deixar l'esquerra com a nullptr. Hem implementat també una constructora que se li passa un token com a paràmetre per simplificar el codi i
+evitar el node *x = new node i x->info token a la següent línea.
+*/
 
 static node* copia_nodes(node* m);
 static void esborra_nodes(node* m);
 static bool compara_nodes(node* m, node* n);
+/*Les tres funcions necessàries per implemetar la constructora per còpia i per igualtat i la destructora de l'expressió, ja que necessitem recorrer l'arbre en inordre.
+*/
+
 static void llista_vars(node* m, list<string> &l);
+/*La funció que retorna la llista de totes les variables de l'expressio, necessària per poguer recorrer l'expressio i trobar-les.
+*/
+
 static node* substitucio(node* m, const string &v, const expressio e);
+/*Funció per substituir les variables amb nom v de l'arbre m per l'expressio e. Igual que abans necessitem métode privat per recorrer l'arbre.
+*/
+
 static void llista_tokens(node *m, list<token> &lt);
+/*Funció per omplir la llista dels tokens de l'arbre m. Com les anteriors, necessitem métode privat per recorrer l'arbre.
+*/
+
 static bool comprova_sintaxis(const list<token> &lt, list<token>::const_iterator it);
+/*Comprova si hi ha incompatibilitat entre l'element de la llista lt, it i el seu següent, si n'hi ha llença error. Útil per a la construcció de l'expressió a partir
+d'una llista de tokens, que va iterant la llista i comprovant que es una expressio correcte amb aquesta funció a cada iteració.
+*/
+
+static bool operadors(token t1, token t2);
+/*Métode per simplificar una mica la construcció d'expressio a partir de llista de tokens, fent que un if no sigui tan llarg. Simplement retorna true si els dos tokens
+que es passen com a paràmetres, tenen la mateixa prioritat i són operadors binaris
+*/
+
 static node* simplificar(node* m, bool &s);
+/*Simplificació d'un pas. Li passem un bool com a paràmetre per saber si s'ha pogut simplificar o no, serà útil per la simplificació completa. 
+*/
+
 static node* simplificacio(node *m);
+/*Simplifica l'arbre m al màxim, ha de ser mètode privat per poder recorrer l'arbre en postordre.
+*/
+
+static void comprova_errors(node* op);
+/*Funció que comprova que l'expressio sigui simplificable i no hi hagi cap error, útil per a la simplificació en un pas i no haver de tractar els errors en el mètode
+simplificar.
+*/
+
+static node* operacio_simple(node* op);
+static node* operants_iguals(node* op);
+static node* operant_zero(node *op);
+static node* operant_CanviSigne(node* op);
+static node* factor_comu(token tk, token tk2, node* comu, node* esq, node* dret, int costat);
+static node* factor_comu_log(node* op, bool &s);
+static node* agrupar_operants(node* op, node* dir, bool &s);
+static node* divisio_entre_un(node* op);
+/*Aquestes són les funcions que utilitza la simplificació en un pas, útils perque simplifiquen el codi, separant-lo per peces i que no quedi una funció molt llarga.
+*/
+
+//Com cap mètode necessita que se li passi el paràmetre implicit, son tots del tipus static.
