@@ -141,28 +141,60 @@ using namespace std;
    mateix tipus. Si op és exponencial llavors c2 és un enter o c1 i c2 nombres reals. Per als operadors unaris (log, sqrt, exp) el operant és un real.*/
    expressio::node* expressio::operacio_simple(node* op){
       token n;
-      if (op->info.tipus() == token::SUMA){
-         if (op->fd->info.tipus() == token::CT_ENTERA) n = token(op->fe->info.valor_enter() + op->fd->info.valor_enter());
+      if (op->info.tipus() == token::DIVISIO and (op->fd->info.tipus() == token::CT_RACIONAL and op->fd->info.valor_racional().num() == 0)){
+         op->fd->info = token(0); 
+         return op;
+      }
+      else if (op->info.tipus() == token::SUMA){
+         if (op->fe->info.tipus() == token::CT_RACIONAL){
+            if (op->fe->info.tipus() == token::CT_ENTERA) n = token(op->fe->info.valor_racional() + racional(op->fd->info.valor_enter()));
+            else n = token(op->fe->info.valor_racional() + op->fd->info.valor_racional()); 
+         }          
+         else if (op->fd->info.tipus() == token::CT_ENTERA) n = token(op->fe->info.valor_enter() + op->fd->info.valor_enter());
          else if (op->fd->info.tipus() == token::CT_REAL) n = token(op->fe->info.valor_real() + op->fd->info.valor_real());
-         else if (op->fd->info.tipus() == token::CT_RACIONAL) n = token(op->fe->info.valor_racional() + op->fd->info.valor_racional()); 
+         else if (op->fd->info.tipus() == token::CT_RACIONAL){
+            if (op->fe->info.tipus() == token::CT_ENTERA) n = token(racional(op->fe->info.valor_enter()) + op->fd->info.valor_racional());
+            else n = token(op->fe->info.valor_racional() + op->fd->info.valor_racional()); 
+         }  
       }
       else if (op->info.tipus() == token::RESTA){
-         if (op->fd->info.tipus() == token::CT_ENTERA) n = token(op->fe->info.valor_enter() - op->fd->info.valor_enter());
+         if (op->fe->info.tipus() == token::CT_RACIONAL){
+            if (op->fe->info.tipus() == token::CT_ENTERA) n = token(op->fe->info.valor_racional() - racional(op->fd->info.valor_enter()));
+            else n = token(op->fe->info.valor_racional() - op->fd->info.valor_racional()); 
+         }     
+         else if (op->fd->info.tipus() == token::CT_ENTERA) n = token(op->fe->info.valor_enter() - op->fd->info.valor_enter());
          else if (op->fd->info.tipus() == token::CT_REAL) n = token(op->fe->info.valor_real() - op->fd->info.valor_real());
-         else if (op->fd->info.tipus() == token::CT_RACIONAL) n = token(op->fe->info.valor_racional() - op->fd->info.valor_racional()); 
+         else if (op->fd->info.tipus() == token::CT_RACIONAL){
+            if (op->fe->info.tipus() == token::CT_ENTERA) n = token(racional(op->fe->info.valor_enter()) - op->fd->info.valor_racional());
+            else n = token(op->fe->info.valor_racional() - op->fd->info.valor_racional()); 
+         }
       }
       else if (op->info.tipus() == token::MULTIPLICACIO){
-         if (op->fd->info.tipus() == token::CT_ENTERA) n = token(op->fe->info.valor_enter() * op->fd->info.valor_enter());
+         if (op->fe->info.tipus() == token::CT_RACIONAL){
+            if (op->fe->info.tipus() == token::CT_ENTERA) n = token(op->fe->info.valor_racional() * racional(op->fd->info.valor_enter()));
+            else n = token(op->fe->info.valor_racional() * op->fd->info.valor_racional()); 
+         }     
+         else if (op->fd->info.tipus() == token::CT_ENTERA) n = token(op->fe->info.valor_enter() * op->fd->info.valor_enter());
          else if (op->fd->info.tipus() == token::CT_REAL) n = token(op->fe->info.valor_real() * op->fd->info.valor_real());
-         else if (op->fd->info.tipus() == token::CT_RACIONAL) n = token(op->fe->info.valor_racional() * op->fd->info.valor_racional()); 
+         else if (op->fd->info.tipus() == token::CT_RACIONAL){
+            if (op->fe->info.tipus() == token::CT_ENTERA) n = token(racional(op->fe->info.valor_enter()) * op->fd->info.valor_racional());
+            else n = token(op->fe->info.valor_racional() * op->fd->info.valor_racional()); 
+         }
       }
       else if (op->info.tipus() == token::DIVISIO){
-         if (op->fd->info.tipus() == token::CT_ENTERA){
+         if (op->fe->info.tipus() == token::CT_RACIONAL){
+            if (op->fe->info.tipus() == token::CT_ENTERA) n = token(op->fe->info.valor_racional() / racional(op->fd->info.valor_enter()));
+            else n = token(op->fe->info.valor_racional() / op->fd->info.valor_racional()); 
+         }     
+         else if (op->fd->info.tipus() == token::CT_ENTERA){
             if (op->fe->info.valor_enter() % op->fd->info.valor_enter() == 0) n = token(op->fe->info.valor_enter()/op->fd->info.valor_enter());
             else n = token(racional(op->fe->info.valor_enter(), op->fd->info.valor_enter()));
          }
          else if (op->fd->info.tipus() == token::CT_REAL) n = token(op->fe->info.valor_real() / op->fd->info.valor_real());
-         else if (op->fd->info.tipus() == token::CT_RACIONAL) n = token(op->fe->info.valor_racional() / op->fd->info.valor_racional()); 
+         else if (op->fd->info.tipus() == token::CT_RACIONAL){
+            if (op->fe->info.tipus() == token::CT_ENTERA) n = token(racional(op->fe->info.valor_enter()) / op->fd->info.valor_racional());
+            else n = token(op->fe->info.valor_racional() / op->fd->info.valor_racional()); 
+         } 
       }
       else if (op->info.tipus() == token::EXPONENCIACIO){
          if(op->fd->info.tipus() == token::CT_ENTERA){
@@ -450,6 +482,12 @@ using namespace std;
       else if (m->info.tipus() >= token::SUMA and m->info.tipus() <= token::EXPONENCIACIO){
          if ((m->fe->info.tipus() < token::VARIABLE and m->fd->info.tipus() == m->fe->info.tipus()) and m->info.tipus() != token::EXPONENCIACIO) 
             m = operacio_simple(m), s = true;
+         
+         else if ((m->fe->info.tipus() == token::CT_RACIONAL and m->fd->info.tipus() <= token::CT_REAL) and m->info.tipus() != token::EXPONENCIACIO)
+            m = operacio_simple(m), s = true;
+
+         else if ((m->fd->info.tipus() == token::CT_RACIONAL and m->fe->info.tipus() <= token::CT_REAL) and m->info.tipus() != token::EXPONENCIACIO)
+            m = operacio_simple(m), s = true;
 
          else if ((m->info.tipus() >= token::MULTIPLICACIO) and m->fd->info == token(1)) 
             m = m->fe, s = true;
@@ -491,8 +529,7 @@ using namespace std;
          }
 
          else if (m->info.tipus() == token::MULTIPLICACIO or m->info.tipus() == token::DIVISIO){
-            if (m->info.tipus() == token::DIVISIO and (m->fd->info.tipus() == token::CT_RACIONAL and m->fd->info.valor_racional().num() == 0)) m->fd->info = token(0);
-            else if (m->info.tipus() == token::MULTIPLICACIO and (m->fe->info.tipus() == token::DIVISIO and m->fe->fe->info == token(1))) m = divisio_entre_un(m), s = true;
+            if (m->info.tipus() == token::MULTIPLICACIO and (m->fe->info.tipus() == token::DIVISIO and m->fe->fe->info == token(1))) m = divisio_entre_un(m), s = true;
             else if (m->fe->info.tipus() == token::DIVISIO) m = agrupar_operants(m, m->fe,s); 
             else if (m->fd->info.tipus() == token::DIVISIO and m->fd->fe->info == token(1)) m = divisio_entre_un(m), s = true;
             else if (m->fe->info.tipus() == token::EXPONENCIACIO and m->fd->info.tipus() == token::EXPONENCIACIO){
